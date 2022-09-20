@@ -6,10 +6,8 @@
 #include <dos.h>
 #include<conio.h>
 static int i ; 
-
-
 int nb;
-
+float total=0;
 void menu();
 void introduire_un_produit();
 void introduire_plusieurs_produits();
@@ -18,6 +16,13 @@ void introduire_plusieurs_produits();
 //		int anne;
 //	char mois[10];
 //}date;
+typedef struct {
+	char nompr[20];
+	char date[50];
+	float prix;
+	float totalttc;
+}state;
+
 
 typedef struct 
 {
@@ -32,8 +37,13 @@ typedef struct
     float total;
     
 }produit;
-produit pr[100];
-int index = 0;
+produit pr[100]= {
+{ 12,"PRODUIT1",25,50},{22,"ALP",50,80},{33,"GIU",100,30}
+};
+int index = 3;
+state st[100];
+int s = 0;
+void statee();
 void supprimerProduit();
 void Afficher();
 void Listerproduitnom();
@@ -41,19 +51,22 @@ void Listerproduitprix();
 void ListerProduit();
 float prixttc(produit p);
 void AcheterProduit();
-void RechercheProduit(int code);
+void Rechercheproduit();
 void Etatdestock();
 void Alimenterstock();
 int chercher(int code);
-void statistique();
-void stateall();
+ void Rechercheparquantite(int q );
+ void Rechercheparcode(int code );
+
+//void statistique();
+//void stateall();
+//float total();
 
 
 int main()
 {
     int choix;
     char on;
-    int coder , codea , q , codep ,qp , codes;
 
     do
     {
@@ -115,9 +128,7 @@ int main()
                 printf("\n===============================================\n");
                 printf("=====     RECHERCHER LES PRODUITS PAR     =====\n");
                 printf("===============================================\n");
-                printf("Entrez le code du produit que vous souhaitez rechercher!");
-                scanf("%d",&coder);
-                RechercheProduit(coder);
+                Rechercheproduit();
                 break;
             }
 
@@ -150,7 +161,7 @@ int main()
                 printf("=====         STATISTIQUE DE VENTE        =====\n");
                 printf("===============================================\n");
                 //statistique();
-                stateall();
+                statee();
                 break;
             }
             
@@ -390,8 +401,6 @@ void Listerproduit(){
 
 void AcheterProduit(){
 	int j=1  , codea , q;
-	
-
 	here:
 	 printf("VEUILLEZ ENTRER LE CODE DU PRODUIT A ACHETER:");
      scanf("%d",&codea);
@@ -399,25 +408,25 @@ void AcheterProduit(){
         if(y==0){
         	goto here;
 				}
-		
      printf("VEUILLEZ ENTRER LA QUANTITE DU PRODUIT A ACHETER:");
      scanf("%d",&q);
 	for(i=0;i<index;i++){
-		if(pr[i].Code == codea ){
-			pr[i].Quantite = (pr[i].Quantite)-q; 	
-             time_t t = time(NULL);
+		if(pr[i].Code == codea ){ 
+		    time_t t = time(NULL);
+			pr[i].Quantite = (pr[i].Quantite)-q; 
+			 strcpy( st[s].nompr,pr[i].Nom );
+	         st[s].prix = pr[i].Prix;
+	         strcpy(st[s].date,ctime(&t));
+	         total=total+(pr[i].prixttc*q);
+	         st[s].totalttc=total;
+	         s++;	
          	printf("le produit est  achete le %s \n" , ctime(&t) );
 	       printf("la quantite du produit apres l achat est :%d \n",pr[i].Quantite);
-	       pr[i].totalv++;
+	       pr[i].totalv+=q;
 	       pr[i].total = pr[i].prixttc*pr[i].totalv;
 	       strcpy(pr[i].date, ctime(&t));
 	       printf("     Code de produit  |    Prix ttc      |  Total Vendus    |     Total     |    Date d'achat \n ");
 	       printf("         %d           |     %.3f  DH     |     %d           |    %.2f DH    |       %s  ", pr[i].Code,pr[i].prixttc,pr[i].totalv,pr[i].total,pr[i].date);
-	       
-	       
-	    
-	       
-	       
 			 j=2;
 		}
 	}
@@ -428,22 +437,69 @@ void AcheterProduit(){
 }
 
 
-void RechercheProduit(int code  ){
+void Rechercheparcode(int code ){
 	int j=1;
 	       for(i=0;i<index;i++){
 		        if(pr[i].Code==code){
 		        	printf("les informations du produit  Numero %d.\n",i+1);
 	              	printf("le code du produit : %d \n",pr[i].Code);
-	             	printf("le nom du produit est :%s",pr[i].Nom);
+	             	printf("le nom du produit est :%s\n",pr[i].Nom);
 	            	printf("le prix du produits est %.3f\n",pr[i].Prix);
 	             	printf("la quantite du produit dans le stock est %d\n",pr[i].Quantite);  
 					 j=2; 
 				}
 		   }
-	if(j==2){
+	if(j==1){
 		printf("CE PRODUIT N EXISTE PAS !!!");
 	}	    
 		 
+}
+void Rechercheparquantite(int q ){
+
+	       for(i=0;i<index;i++){
+		        if(pr[i].Quantite==q){
+		        	printf("les informations du produit  Numero %d.\n",i+1);
+	              	printf("le code du produit : %d \n",pr[i].Code);
+	             	printf("le nom du produit est :%s\n",pr[i].Nom);
+	            	printf("le prix du produits est %.3f\n",pr[i].Prix);
+	             	printf("la quantite du produit dans le stock est %d\n",pr[i].Quantite);  
+					  
+				}
+		   }
+    
+		 
+}
+
+
+void Rechercheproduit(){
+	
+	int c=0 , coder , q;
+	
+	
+	printf("---Est ce que vous voulez chercher les produits par code ou par quantite!---\n");
+	printf("SI PAR CODE VEUILLEZ ENTRER 1 \n");
+	printf("SINON SI PAR QUANTITE VEUILLEZ ENTRER 2:");
+	scanf("%d",&c);
+	switch(c){
+		case 1:
+			{
+				printf("ENTEZ LE CODE DU PRODUIT QUE VOUS SOUHAITEZ RECHERCHER!");
+				scanf("%d",&coder);
+				Rechercheparcode(coder);
+				break;
+			}
+			
+		case 2:
+	     	{
+	     		printf("ENTEZ LA QUANTITE AVEC LAQUELLE VOUS POUVEZ CHERCHER LES PRODUITS!");
+				scanf("%d",&q);
+			    Rechercheparquantite(q );
+			}	
+		default:
+		     break;	
+	}
+	
+	
 }
 
 
@@ -472,6 +528,7 @@ void Alimenterstock(){
 	here:
 	  printf("VEUILLEZ ENTRER LE CODE DU PRODUIT POUR LE METTRE A JOUR :");
       scanf("%d",&codep);
+      printf("\n");
        int y = chercher(codep);
         if(y==0){
              	goto here;
@@ -503,12 +560,13 @@ void supprimerProduit(){
 	
               for(i=0;i<index;i++){
                        if(pr[i].Code==codes){
-                           for(j=i;j<index-1;j++)
+                           for(j=i;j<index;j++)
                               pr[j]=pr[j+1];
-                                  index--;
-                                  //  i--;
+                                 
                                      }
+                      
                       }
+                        index--;
 	 
 
 	 
@@ -529,30 +587,82 @@ int chercher(int code){
 }
 
 
-void statistique(){
-			
-	for(i=0;i<index;i++)
-      {
-      	if(pr[i].totalv!=0){
-		  
-	
-	printf("\t      Code de produit |    Prix ttc      |  Total Vendus       |     Total           |    Date d'achat \n ");
-    printf("\t         %d           |     %.3f  DH     |     %d           |    %.2f DH    |       %s  ", pr[i].Code,pr[i].prixttc,pr[i].totalv,pr[i].total,pr[i].date);
-			}			
-		}
-}
+//void statistique(){
+//			
+//	for(i=0;i<index;i++)
+//      {
+//      	if(pr[i].totalv!=0){
+//		  
+//	
+//	printf("\t      Code de produit |    Prix ttc      |  Total Vendus       |     Total           |    Date d'achat \n ");
+//    printf("\t         %d           |     %.3f  DH     |     %d           |    %.2f DH    |       %s  ", pr[i].Code,pr[i].prixttc,pr[i].totalv,pr[i].total,pr[i].date);
+//			}			
+//		}
+//}
 
-void stateall(){
+//void stateall(){
+//	
+//	for(i=0;i<index;i++){
+//		if(difftime(pr[i].date, pr[i+1].date)<86400 && pr[i].totalv!=0){
+//	printf("   Code de produit |    Prix ttc      |  Total Vendus    |     Total     |       Date d'achat \n ");
+//    printf("      %d           |     %.3f  DH     |     %d           |    %.2f DH    |       %s  \n", pr[i].Code,pr[i].prixttc,pr[i].totalv,pr[i].total,pr[i].date);
+//    printf("      TOTAL         ");
+//    printf("%.2f",total());
+//			}
+//			
+//		}
+//		
+//	}
+float tt1(){
+	float t1 = 0;
+	for (i=0;i<s;i++){
+		  t1 = t1+ st[i].totalttc;
+	}
+	return t1;
+}
 	
-	for(i=0;i<index;i++){
-		if(difftime(pr[i].date, pr[i+1].date)<86400 && pr[i].totalv!=0){
-	printf("\t      Code de produit |    Prix ttc      |  Total Vendus    |     Total     |       Date d'achat \n ");
-    printf("\t         %d           |     %.3f  DH     |     %d           |    %.2f DH    |       %s  ", pr[i].Code,pr[i].prixttc,pr[i].totalv,pr[i].total,pr[i].date);
+void statee(){
+	
+	 float MIN  , MAX = 0 ; 
+     MIN = st[0].prix;
+      float tt = tt1();
+     printf("\n");
+     printf("+=================+============================+=================+=====\n");
+     printf("|   NOM PRO       |         PRIX PROD          |    DATE ACHAT       |\n");
+     printf("+=================+============================+=================+===+\n");
+		for(i=0;i<s;i++){		
+	 printf("| %s       | %.2f     |      %s    \n",st[i].nompr,st[i].prix,st[i].date);
+	 if(MAX <st[i].prix){
+	 	MAX=st[i].prix;
+	 }
+	if(MIN>st[i].prix){
+		MIN=st[i].prix;
+	}
 			}
 			
-		}
-		
+			
+	printf("+=================+============================+=================+======\n");
+	printf("LE TOTAL DES PRODUITS VENDUS EST : %.2f DH",tt);
+	printf("\n");
+	printf("LE PRIX MAX DES PRODUITS VENDUS EST : %.2f DH \n",MAX);
+	printf("LE PRIX MIN DES PRODUITS VENDUS EST : %.2f DH \n",MIN);
+	printf("LA MOYENNE DES PROUITS VENDUS EST   : %.2f DH \n",tt/s);
+	
+	
+	
+	
+	
 	}
+//	
+//	float total(){
+//		float t=0;
+//		for(i=0;i<index;i++){
+//			if(pr[i].totalv!=0){
+//				t=t+pr[i].prixttc;
+//		}
+//	}
+//	 return t;
+//	}
 
 
 
